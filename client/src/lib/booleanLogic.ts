@@ -229,11 +229,16 @@ function collectVariables(ast: Ast, target = new Set<string>()) {
   return target;
 }
 
-export function parseBooleanExpression(input: string) {
+export function parseBooleanExpression(input: string, explicitVariables?: string[]) {
   const ast = new ExpressionParser(tokenize(input)).parse();
-  const variables = Array.from(collectVariables(ast)).sort((a, b) => a.localeCompare(b));
+  const inferredVariables = Array.from(collectVariables(ast)).sort((a, b) => a.localeCompare(b));
+  const variables = (explicitVariables?.length ? explicitVariables : inferredVariables).map((name) => name.trim().toUpperCase());
   if (variables.length < 1) throw new Error("Use at least one named input variable.");
   if (variables.length > 6) throw new Error("This lab supports up to 6 input variables.");
+  if (new Set(variables).size !== variables.length) throw new Error("Variable names must be unique.");
+  if (!variables.every((name) => /^[A-Z][A-Z0-9_]{0,2}$/.test(name))) throw new Error("Variable names must begin with a letter and contain up to 3 letters, numbers, or underscores.");
+  const undeclared = inferredVariables.filter((name) => !variables.includes(name));
+  if (undeclared.length) throw new Error(`Expression uses undeclared variable(s): ${undeclared.join(", ")}. Add them to the variable definition panel.`);
   const values = assignmentsFor(variables).map((assignment) => evaluateAst(ast, assignment));
   return { variables, values };
 }

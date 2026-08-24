@@ -289,6 +289,13 @@ function VariableRenameControls({ names, onChange }: { names: string[]; onChange
   </div>;
 }
 
+function VariableDefinitionPanel({ count, names, onCountChange, onNameChange }: { count: number; names: string[]; onCountChange: (value: number) => void; onNameChange: (index: number, value: string) => void }) {
+  return <section className="variable-definition-panel" aria-labelledby="variable-definition-title">
+    <div className="variable-definition-heading"><div><span className="field-label" id="variable-definition-title">Define your variables</span><p className="field-hint">Choose the input count first, then name each signal used by your function.</p></div><VariableStepper value={count} onChange={onCountChange} /></div>
+    <VariableRenameControls names={names} onChange={onNameChange} />
+  </section>;
+}
+
 function grayCodes(bits: number) {
   return Array.from({ length: 2 ** bits }, (_, value) => value ^ (value >> 1));
 }
@@ -378,7 +385,7 @@ export default function Home({ embedded = false, visibleSection = "all" }: { emb
     try {
       let next: AnalysisResult;
       if (mode === "expression") {
-        const parsed = parseBooleanExpression(expression);
+        const parsed = parseBooleanExpression(expression, variableNames);
         const dontCares = parseDontCareList(dontCareInput, parsed.values.length);
         next = analyzeFromValues(parsed.variables, parsed.values, expression, dontCares);
       } else if (mode === "terms") {
@@ -506,10 +513,11 @@ export default function Home({ embedded = false, visibleSection = "all" }: { emb
               <InputModeTab active={mode === "terms"} label="Terms" helper="Σm / ΠM" icon={<Sigma size={18} />} onClick={() => setMode("terms")} />
               <InputModeTab active={mode === "truth"} label="Truth table" helper="0 → 1 → X" icon={<TableProperties size={17} />} onClick={() => setMode("truth")} />
             </div>
-            <div className="preset-strip"><span className="field-label">Quick starts</span><div>{PRESETS.map((preset) => <button type="button" key={preset.label} onClick={() => { setMode("expression"); setExpression(preset.expression); setError(""); }}>{preset.label}<small>{preset.helper}</small></button>)}</div></div>
+              <div className="preset-strip"><span className="field-label">Quick starts</span><div>{PRESETS.map((preset) => <button type="button" key={preset.label} onClick={() => { const presetVariables = Array.from(new Set((preset.expression.match(/[A-Za-z][A-Za-z0-9_]*/g) ?? []).map((name) => name.toUpperCase()))).filter((name) => !["AND", "OR", "NOT", "XOR", "XNOR"].includes(name)); const nextCount = Math.min(6, Math.max(2, presetVariables.length)); setMode("expression"); setExpression(preset.expression); setVariableCount(nextCount); setVariableNames((current) => Array.from({ length: nextCount }, (_, index) => presetVariables[index] || current[index] || createVariables(nextCount)[index])); setError(""); }}>{preset.label}<small>{preset.helper}</small></button>)}</div></div>
 
             <div className="input-stage">
               {mode === "expression" && <>
+                <VariableDefinitionPanel count={variableCount} names={tableVariables} onCountChange={updateVariableCount} onNameChange={renameVariable} />
                 <label className="field-label" htmlFor="expression-input">Boolean expression</label>
                 <textarea id="expression-input" value={expression} onChange={(event) => setExpression(event.target.value)} spellCheck={false} placeholder="A'B + AC" />
                 <div className="syntax-help"><code>'</code> / <code>!</code> / <code>~</code> NOT <span>·</span> <code>*</code> / <code>AND</code> <span>+</span> / <code>OR</code> <span>^</span> / <code>XOR</code> / <code>XNOR</code> <span>Parentheses supported</span></div>

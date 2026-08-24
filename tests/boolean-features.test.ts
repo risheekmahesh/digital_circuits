@@ -21,6 +21,17 @@ describe("Boolean expression feature syntax", () => {
   it("supports custom identifiers with digits and underscores", () => {
     expect(parseBooleanExpression("EN AND X1").variables).toEqual(["EN", "X1"]);
   });
+
+  it("evaluates an expression across an explicit variable definition", () => {
+    const parsed = parseBooleanExpression("A XOR B", ["A", "B", "C", "D"]);
+    expect(parsed.variables).toEqual(["A", "B", "C", "D"]);
+    expect(parsed.values).toHaveLength(16);
+    expect(parsed.values[5]).toBe(true);
+  });
+
+  it("rejects an expression variable omitted from the definition", () => {
+    expect(() => parseBooleanExpression("A AND C", ["A", "B"])).toThrow(/undeclared/i);
+  });
 });
 
 describe("Boolean input contracts", () => {
