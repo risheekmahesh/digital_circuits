@@ -108,6 +108,18 @@ function Wire({ d, source = "derived", value }: { d: string; source?: SignalSour
   return <path className={`module-wire wire-${source} ${value ? "is-high" : "is-low"}`} d={d} />;
 }
 
+function AdderBlock({ x, y, kind, sum, carry, highlighted = false }: { x: number; y: number; kind: "HA" | "FA"; sum: Bit; carry: Bit; highlighted?: boolean }) {
+  const inputYs = kind === "FA" ? [16, 32, 48] : [20, 44];
+  return <g className={`module-adder-block adder-${kind.toLowerCase()} ${sum || carry ? "is-active" : ""} ${highlighted ? "is-highlighted" : ""}`} transform={`translate(${x}, ${y})`}>
+    <rect width="126" height="64" rx="9" />
+    <text className="module-adder-block-title" x="63" y="23" textAnchor="middle">{kind}</text>
+    <text className="module-adder-block-value" x="63" y="43" textAnchor="middle">S {bitValue(sum)} · C {bitValue(carry)}</text>
+    {inputYs.map((inputY) => <circle className="module-adder-input-pin" key={inputY} cx="0" cy={inputY} r="3" />)}
+    <circle className="module-adder-output-pin" cx="126" cy="20" r="3" /><circle className="module-adder-output-pin" cx="126" cy="48" r="3" />
+    <text className="module-adder-port-label" x="112" y="17" textAnchor="end">S</text><text className="module-adder-port-label" x="112" y="55" textAnchor="end">C</text>
+  </g>;
+}
+
 function CircuitFrame({ title, scale, onScaleChange, children, width = 1000, height = 360 }: { title: string; scale: number; onScaleChange: (value: number) => void; children: ReactNode; width?: number; height?: number }) {
   const id = `module-grid-${title.replace(/[^a-z0-9]/gi, "-").toLowerCase()}`;
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -285,7 +297,7 @@ function MultiplierCard() {
       <CircuitFrame title="PARTIAL PRODUCTS + DIAGONAL ADDERS" scale={scale} onScaleChange={setScale}>
         <text className="module-stage-label" x="210" y="22">PARTIAL PRODUCTS &amp; GENERATION</text><text className="module-stage-label" x="420" y="22">SUMMATION STAGES</text>
         <Terminal x={20} y={42} label="A₀" value={a0} source="a0" /><Terminal x={20} y={90} label="A₁" value={a1} source="a1" /><Terminal x={20} y={230} label="B₀" value={b0} source="b0" /><Terminal x={20} y={278} label="B₁" value={b1} source="b1" />
-        <Wire source="a0" value={a0} d="M96 42 H130 V40 H220" /><Wire source="a0" value={a0} d="M130 42 V180 H220" /><Wire source="a1" value={a1} d="M96 90 H160 V110 H220" /><Wire source="a1" value={a1} d="M160 90 V250 H220" /><Wire source="b0" value={b0} d="M96 230 H180 V56 H220" /><Wire source="b0" value={b0} d="M180 230 V126 H220" /><Wire source="b1" value={b1} d="M96 278 H200 V196 H220" /><Wire source="b1" value={b1} d="M200 278 V266 H220" />
+        <Wire source="a0" value={a0} d="M96 42 H130 V32 H220" /><Wire source="a0" value={a0} d="M130 42 V172 H220" /><Wire source="a1" value={a1} d="M96 90 H160 V102 H220" /><Wire source="a1" value={a1} d="M160 90 V242 H220" /><Wire source="b0" value={b0} d="M96 230 H180 V48 H220" /><Wire source="b0" value={b0} d="M180 230 V118 H220" /><Wire source="b1" value={b1} d="M96 278 H200 V188 H220" /><Wire source="b1" value={b1} d="M200 278 V258 H220" />
         <circle className="module-junction junction-a0" cx="130" cy="42" r="4" /><circle className="module-junction junction-a1" cx="160" cy="90" r="4" /><circle className="module-junction junction-b0" cx="180" cy="230" r="4" /><circle className="module-junction junction-b1" cx="200" cy="278" r="4" />
         <Gate x={220} y={12} label="AND" active={p0} /><Gate x={220} y={82} label="AND" active={p1} /><Gate x={220} y={152} label="AND" active={p2} /><Gate x={220} y={222} label="AND" active={p3} />
         <Wire value={p0} d="M318 40 H890" />
@@ -294,7 +306,7 @@ function MultiplierCard() {
         <Gate x={450} y={92} label="XOR" active={result.sums[0]} /><Gate x={450} y={182} label="AND" active={result.carries[0]} />
         <Wire source="derived" value={result.sums[0]} d="M548 120 H620 V112 H660" /><Wire source="derived" value={result.carries[0]} d="M548 210 H620 V218 H660" /><Wire source="derived" value={p3} d="M318 250 H600 V128 H660" /><Wire source="derived" value={p3} d="M318 250 H620 V234 H660" />
         <Gate x={660} y={92} label="XOR" active={result.sums[1]} /><Gate x={660} y={198} label="AND" active={result.carries[1]} />
-        <Wire value={result.sums[1]} d="M758 120 H820 V170 H890" /><Wire value={result.carries[1]} d="M758 226 H820 V250 H890" />
+        <Wire value={result.sums[0]} source="derived" d="M548 120 H600 V80 H840 V120 H890" /><Wire value={result.sums[1]} source="derived" d="M758 120 H820 V170 H890" /><Wire value={result.carries[1]} source="derived" d="M758 226 H820 V250 H890" />
         <Terminal x={890} y={40} label="P₀" value={result.product[3]} kind="output" /><Terminal x={890} y={120} label="P₁" value={result.product[2]} kind="output" /><Terminal x={890} y={170} label="P₂" value={result.product[1]} kind="output" /><Terminal x={890} y={250} label="P₃" value={result.product[0]} kind="output" />
       </CircuitFrame>
     </div>
@@ -308,35 +320,37 @@ function ThreeBitMultiplierCard() {
   const result = multiplyThreeBitNumbers(a2, a1, a0, b2, b1, b0);
   const [p00, p10, p20, p01, p11, p21, p02, p12, p22] = result.partialProducts;
   const [p6, p5, p4, p3, p2, p1, p0] = result.product;
-  const [sum1, sum2, sum3, sum4, sum5] = result.adderSums;
-  const [carry1, carry2, carry3, carry4] = result.adderCarries;
+  const [sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8] = result.adderSums;
+  const [carry1, carry2, carry3, carry4, carry5, carry6, carry7, carry8] = result.adderCarries;
   return <article className="module-card multiplier-card" id="multiplier-3bit">
     <ModuleHeading eyebrow="06 / MULTIPLIER" title="3-bit × 3-bit Multiplier" description="Generates nine staircase partial products and combines them through a diagonal ripple array." meta="6 INPUTS · 7 OUTPUTS" />
     <FormulaStrip formulas={["Pᵢⱼ = AᵢBⱼ", "P = A × B = P₆P₅P₄P₃P₂P₁P₀"]} />
     <div className="module-content-grid">
       <div className="module-data-column"><div className="module-section-label">TRUTH TABLE</div><TruthTable headers={["A₂", "A₁", "A₀", "B₂", "B₁", "B₀", "P₆", "P₅", "P₄", "P₃", "P₂", "P₁", "P₀"]} rows={threeBitMultiplierTruthTable} activeInputs={[a2, a1, a0, b2, b1, b0]} /><SimulatorPanel inputs={<><BitToggle label="A₂" value={a2} onChange={setA2} /><BitToggle label="A₁" value={a1} onChange={setA1} /><BitToggle label="A₀" value={a0} onChange={setA0} /><BitToggle label="B₂" value={b2} onChange={setB2} /><BitToggle label="B₁" value={b1} onChange={setB1} /><BitToggle label="B₀" value={b0} onChange={setB0} /></>} outputs={<><Lamp label="P₆" value={p6} /><Lamp label="P₅" value={p5} /><Lamp label="P₄" value={p4} /><Lamp label="P₃" value={p3} /><Lamp label="P₂" value={p2} /><Lamp label="P₁" value={p1} /><Lamp label="P₀" value={p0} /><code className="product-readout">{bitString(result.product)}₂ = {decimalFromBits(result.product)}₁₀</code></>} /></div>
-      <CircuitFrame title="DIAGONAL ARRAY + RIPPLE SUMMATION" scale={scale} onScaleChange={setScale} width={1500} height={620}>
-        <text className="module-stage-label" x="220" y="18">PARTIAL PRODUCTS &amp; GENERATION</text><text className="module-stage-label" x="520" y="18">DIAGONAL SUMMATION STAGES</text><text className="module-stage-label" x="1180" y="18">PRODUCT EDGE</text>
+      <CircuitFrame title="DIAGONAL ARRAY + RIPPLE SUMMATION" scale={scale} onScaleChange={setScale} width={1800} height={620}>
+        <text className="module-stage-label" x="220" y="18">PARTIAL PRODUCTS &amp; GENERATION</text><text className="module-stage-label" x="520" y="18">DIAGONAL SUMMATION STAGES</text><text className="module-stage-label" x="1500" y="18">PRODUCT EDGE</text>
         <Terminal x={20} y={55} label="A₀" value={a0} source="a0" /><Terminal x={20} y={95} label="A₁" value={a1} source="a1" /><Terminal x={20} y={135} label="A₂" value={a2} source="a2" /><Terminal x={20} y={465} label="B₀" value={b0} source="b0" /><Terminal x={20} y={505} label="B₁" value={b1} source="b1" /><Terminal x={20} y={545} label="B₂" value={b2} source="b2" />
-        <Wire source="a0" value={a0} d="M96 55 H130 V40 H220" /><Wire source="a0" value={a0} d="M130 55 V210 H220" /><Wire source="a0" value={a0} d="M130 55 H180 V380 H220" />
-        <Wire source="a1" value={a1} d="M96 95 H150 V100 H220" /><Wire source="a1" value={a1} d="M150 95 V270 H220" /><Wire source="a1" value={a1} d="M150 95 V440 H220" />
-        <Wire source="a2" value={a2} d="M96 135 H170 V160 H220" /><Wire source="a2" value={a2} d="M170 135 V330 H220" /><Wire source="a2" value={a2} d="M170 135 V500 H220" />
-        <Wire source="b0" value={b0} d="M96 465 H180 V56 H220" /><Wire source="b0" value={b0} d="M180 465 V116 H220" /><Wire source="b0" value={b0} d="M180 465 V176 H220" />
-        <Wire source="b1" value={b1} d="M96 505 H190 V226 H220" /><Wire source="b1" value={b1} d="M190 505 V286 H220" /><Wire source="b1" value={b1} d="M190 505 V346 H220" />
-        <Wire source="b2" value={b2} d="M96 545 H200 V396 H220" /><Wire source="b2" value={b2} d="M200 545 V456 H220" /><Wire source="b2" value={b2} d="M200 545 V516 H220" />
+        <Wire source="a0" value={a0} d="M96 55 H130 V32 H220" /><Wire source="a0" value={a0} d="M130 55 V222 H220" /><Wire source="a0" value={a0} d="M130 55 H180 V392 H220" />
+        <Wire source="a1" value={a1} d="M96 95 H150 V92 H220" /><Wire source="a1" value={a1} d="M150 95 V282 H220" /><Wire source="a1" value={a1} d="M150 95 V452 H220" />
+        <Wire source="a2" value={a2} d="M96 135 H170 V152 H220" /><Wire source="a2" value={a2} d="M170 135 V342 H220" /><Wire source="a2" value={a2} d="M170 135 V512 H220" />
+        <Wire source="b0" value={b0} d="M96 465 H180 V48 H220" /><Wire source="b0" value={b0} d="M180 465 V108 H220" /><Wire source="b0" value={b0} d="M180 465 V168 H220" />
+        <Wire source="b1" value={b1} d="M96 505 H190 V222 H220" /><Wire source="b1" value={b1} d="M190 505 V282 H220" /><Wire source="b1" value={b1} d="M190 505 V342 H220" />
+        <Wire source="b2" value={b2} d="M96 545 H200 V392 H220" /><Wire source="b2" value={b2} d="M200 545 V452 H220" /><Wire source="b2" value={b2} d="M200 545 V512 H220" />
         <circle className="module-junction junction-a0" cx="130" cy="55" r="4" /><circle className="module-junction junction-a1" cx="150" cy="95" r="4" /><circle className="module-junction junction-a2" cx="170" cy="135" r="4" /><circle className="module-junction junction-b0" cx="180" cy="465" r="4" /><circle className="module-junction junction-b1" cx="190" cy="505" r="4" /><circle className="module-junction junction-b2" cx="200" cy="545" r="4" />
         <Gate x={220} y={12} label="AND" active={p00} /><Gate x={220} y={72} label="AND" active={p10} /><Gate x={220} y={132} label="AND" active={p20} /><Gate x={220} y={202} label="AND" active={p01} /><Gate x={220} y={262} label="AND" active={p11} /><Gate x={220} y={322} label="AND" active={p21} /><Gate x={220} y={372} label="AND" active={p02} /><Gate x={220} y={432} label="AND" active={p12} /><Gate x={220} y={492} label="AND" active={p22} />
         <text className="module-stage-label" x="330" y="48">P₀₀</text><text className="module-stage-label" x="330" y="108">P₁₀</text><text className="module-stage-label" x="330" y="168">P₂₀</text><text className="module-stage-label" x="330" y="238">P₀₁</text><text className="module-stage-label" x="330" y="298">P₁₁</text><text className="module-stage-label" x="330" y="358">P₂₁</text><text className="module-stage-label" x="330" y="408">P₀₂</text><text className="module-stage-label" x="330" y="468">P₁₂</text><text className="module-stage-label" x="330" y="528">P₂₂</text>
-        <Wire value={p00} d="M318 40 H1320" />
-        <Wire source="derived" value={p10} d="M318 100 H390 V70 H480" /><Wire source="derived" value={p01} d="M318 230 H420 V86 H480" />
-        <Gate x={480} y={42} label="XOR" active={sum1} /><Gate x={480} y={132} label="AND" active={carry1} /><Wire source="derived" value={sum1} d="M578 70 H650 V70 H720" /><Wire source="derived" value={carry1} d="M578 160 H670 V136 H720" />
-        <Wire source="derived" value={p20} d="M318 160 H620 V86 H720" /><Wire source="derived" value={p11} d="M318 290 H650 V102 H720" /><Gate x={720} y={58} label="XOR" active={sum2} /><Gate x={720} y={148} label="AND" active={carry2} />
-        <Wire source="derived" value={sum2} d="M818 86 H880 V86 H960" /><Wire source="derived" value={carry2} d="M818 176 H900 V152 H960" /><Wire source="derived" value={p02} d="M318 400 H850 V102 H960" /><Gate x={960} y={58} label="XOR" active={sum3} /><Gate x={960} y={148} label="AND" active={carry3} />
-        <Wire source="derived" value={sum3} d="M1058 86 H1120 V86 H1180" /><Wire source="derived" value={carry3} d="M1058 176 H1140 V152 H1180" /><Gate x={1180} y={58} label="XOR" active={sum4} /><Gate x={1180} y={148} label="AND" active={carry4} />
-        <Wire source="derived" value={p12} d="M318 460 H1060 V102 H1180" /><Wire source="derived" value={p21} d="M318 350 H1140 V136 H1180" /><Wire source="derived" value={p22} d="M318 520 H1140 V212 H1180" />
-        <Wire source="derived" value={p1} d="M578 70 H620 V340 H1320 V86" /><Wire source="derived" value={p2} d="M818 86 H840 V360 H1320 V132" /><Wire source="derived" value={p3} d="M1058 86 H1080 V380 H1320 V178" /><Wire source="derived" value={p4} d="M1278 86 H1320 V224" /><Wire source="derived" value={p5} d="M1278 176 H1320 V270" /><Wire source="derived" value={p6} d="M1278 270 H1320 V316" />
-        <Terminal x={1320} y={40} label="P₀" value={p0} kind="output" /><Terminal x={1320} y={86} label="P₁" value={p1} kind="output" /><Terminal x={1320} y={132} label="P₂" value={p2} kind="output" /><Terminal x={1320} y={178} label="P₃" value={p3} kind="output" /><Terminal x={1320} y={224} label="P₄" value={p4} kind="output" /><Terminal x={1320} y={270} label="P₅" value={p5} kind="output" /><Terminal x={1320} y={316} label="P₆" value={p6} kind="output" />
-        <text className="module-stage-label" x="480" y="232">CARRY DIAGONALS →</text><text className="module-stage-label" x="720" y="232">CARRY DIAGONALS →</text><text className="module-stage-label" x="960" y="232">RIPPLE EDGE →</text>
+        <Wire source="derived" value={p10} d="M318 100 H450" /><Wire source="derived" value={p01} d="M318 230 H400 V124 H450" />
+        <AdderBlock x={450} y={80} kind="HA" sum={sum1} carry={carry1} />
+        <Wire source="derived" value={p20} d="M318 160 H360 V96 H650" /><Wire source="derived" value={p11} d="M318 290 H390 V112 H650" /><Wire source="derived" value={p02} d="M318 410 H420 V128 H650" /><AdderBlock x={650} y={80} kind="FA" sum={sum2} carry={carry2} />
+        <Wire source="derived" value={sum2} d="M776 100 H850" /><Wire source="derived" value={carry1} d="M576 128 H610 V124 H850" /><AdderBlock x={850} y={80} kind="HA" sum={sum3} carry={carry3} />
+        <Wire source="derived" value={p21} d="M318 340 H510 V96 H1050" /><Wire source="derived" value={p12} d="M318 470 H540 V112 H1050" /><Wire source="derived" value={carry2} d="M776 128 H820 V128 H1050" /><AdderBlock x={1050} y={80} kind="FA" sum={sum4} carry={carry4} />
+        <Wire source="derived" value={sum4} d="M1176 100 H1250" /><Wire source="derived" value={carry3} d="M976 128 H1010 V124 H1250" /><AdderBlock x={1250} y={80} kind="HA" sum={sum5} carry={carry5} />
+        <Wire source="derived" value={p22} d="M318 530 H620 V260 H1050" /><Wire source="derived" value={carry4} d="M1176 128 H1220 V284 H1050" /><AdderBlock x={1050} y={240} kind="HA" sum={sum6} carry={carry6} />
+        <Wire source="derived" value={sum6} d="M1176 260 H1250" /><Wire source="derived" value={carry5} d="M1376 128 H1410 V284 H1250" /><AdderBlock x={1250} y={240} kind="HA" sum={sum7} carry={carry7} />
+        <Wire source="derived" value={carry6} d="M1176 288 H1400 V260 H1450" /><Wire source="derived" value={carry7} d="M1376 288 H1420 V284 H1450" /><AdderBlock x={1450} y={240} kind="HA" sum={sum8} carry={carry8} />
+        <Wire source="derived" value={p00} d="M318 40 H1600 V72 H1660" /><Wire source="derived" value={sum1} d="M576 100 H1620 V112 H1660" /><Wire source="derived" value={sum3} d="M976 100 H1600 V152 H1660" /><Wire source="derived" value={sum5} d="M1376 100 H1580 V192 H1660" /><Wire source="derived" value={sum7} d="M1376 260 H1560 V232 H1660" /><Wire source="derived" value={sum8} d="M1576 260 H1600 V272 H1660" /><Wire source="derived" value={carry8} d="M1576 288 H1620 V312 H1660" />
+        <Terminal x={1660} y={72} label="P₀" value={p0} kind="output" /><Terminal x={1660} y={112} label="P₁" value={p1} kind="output" /><Terminal x={1660} y={152} label="P₂" value={p2} kind="output" /><Terminal x={1660} y={192} label="P₃" value={p3} kind="output" /><Terminal x={1660} y={232} label="P₄" value={p4} kind="output" /><Terminal x={1660} y={272} label="P₅" value={p5} kind="output" /><Terminal x={1660} y={312} label="P₆" value={p6} kind="output" />
+        <text className="module-stage-label" x="500" y="360">P₁ = S₁</text><text className="module-stage-label" x="800" y="360">P₂ = S₃</text><text className="module-stage-label" x="1100" y="360">P₃ = S₅</text><text className="module-stage-label" x="1400" y="360">P₄ = S₇ · P₅ = S₈ · P₆ = C₈</text>
       </CircuitFrame>
     </div>
     <ModuleInfoBanner>The 3×3 array generates nine AND partial products in three shifted rows. The staggered XOR/AND stages carry each diagonal column into the next, with the final ripple edge exposing P₀ through P₆.</ModuleInfoBanner>
@@ -376,6 +390,39 @@ function PartialProductMatrix({ aBits, bBits, product }: { aBits: Bit[]; bBits: 
   </section>;
 }
 
+function RippleChainDiagram({ title, aBits, bBits, result, activeStage, scale, onScaleChange, cin, subtract = false, outputLabel = "COUT" }: { title: string; aBits: Bit[]; bBits: Bit[]; result: { sum: Bit[]; carryOut: Bit; carries: Bit[]; stages: Array<{ sum: Bit; carry: Bit }> }; activeStage: number; scale: number; onScaleChange: (value: number) => void; cin: Bit; subtract?: boolean; outputLabel?: string }) {
+  const width = aBits.length;
+  const canvasWidth = 300 + width * 150;
+  const outputY = 300;
+  const canvasHeight = 340;
+  return <CircuitFrame title={title} scale={scale} onScaleChange={onScaleChange} width={canvasWidth} height={canvasHeight}>
+    <text className="module-stage-label" x="24" y="24">{subtract ? "A + ~B + 1" : "LSB → MSB CARRY PROPAGATION"}</text>
+    <text className="module-stage-label" x="120" y="65">FULL-ADDER STAGES</text>
+    {Array.from({ length: width }, (_, index) => {
+      const stageIndex = width - index - 1;
+      const x = 120 + index * 150;
+      const y = 92;
+      const stage = result.stages[stageIndex];
+      const carryIn = index === 0 ? cin : result.carries[stageIndex + 1];
+      const active = activeStage >= index + 1;
+      const sourceB = subtract ? "derived" : "b";
+      return <g key={stageIndex}>
+        <text className="module-stage-label" x={x + 63} y="84" textAnchor="middle">BIT {stageIndex}</text>
+        <text className="module-stage-label module-input-label" x={x - 8} y="35" textAnchor="end">A{stageIndex} = {bitValue(aBits[stageIndex])}</text>
+        <Wire source="a" value={aBits[stageIndex]} d={`M${x} 42 V${y + 16}`} />
+        <text className="module-stage-label module-input-label" x={x - 8} y="56" textAnchor="end">{subtract ? "~B" : "B"}{stageIndex} = {bitValue(bBits[stageIndex])}</text>
+        <Wire source={sourceB} value={bBits[stageIndex]} d={`M${x - 22} 60 V${y + 32} H${x}`} />
+        {index === 0 ? <><Terminal x={20} y={260} label={subtract ? "CIN = 1" : "CIN"} value={cin} source="c" /><Wire source="c" value={cin} d={`M96 260 H104 V${y + 48} H${x}`} /></> : <Wire source="derived" value={carryIn} d={`M${x - 24} ${y + 48} H${x}`} />}
+        <AdderBlock x={x} y={y} kind="FA" sum={stage.sum} carry={stage.carry} highlighted={active} />
+        <Wire source="derived" value={stage.sum} d={`M${x + 126} ${y + 20} H${x + 148}`} />
+        <text className="module-stage-label module-output-label" x={x + 153} y={y + 24}>S{stageIndex} = {bitValue(stage.sum)}</text>
+        {index < width - 1 && <Wire source="derived" value={stage.carry} d={`M${x + 126} ${y + 48} H${x + 150}`} />}
+      </g>;
+    })}
+    <Wire source="derived" value={result.carryOut} d={`M${120 + (width - 1) * 150 + 126} 140 H${canvasWidth - 10} V${outputY}`} /><Terminal x={canvasWidth - 10} y={outputY} label={outputLabel} value={result.carryOut} kind="output" />
+  </CircuitFrame>;
+}
+
 function RippleAdderCard() {
   const [width, setWidth] = useState(4);
   const [aValue, setAValue] = useState(9);
@@ -393,7 +440,7 @@ function RippleAdderCard() {
     <ModuleHeading eyebrow="07 / ADDER" title="Ripple-Carry Adder" description="A configurable 2–8-bit chain of full adders with carry propagation from the least-significant stage to the MSB." meta={`${width} BITS · ${width + 1} OUTPUTS`} />
     <FormulaStrip formulas={["S = A + B + CIN", "Cᵢ₊₁ = FA(Aᵢ, Bᵢ, Cᵢ)"]} />
     <div className="variable-module-controls"><label>Bit width<select value={width} onChange={(event) => { const next = Number(event.target.value); setWidth(next); setAValue((value) => Math.min(value, 2 ** next - 1)); setBValue((value) => Math.min(value, 2 ** next - 1)); setActiveStage(0); }}>{Array.from({ length: 7 }, (_, index) => <option key={index + 2} value={index + 2}>{index + 2}-bit</option>)}</select></label><label>A<input type="number" min="0" max={max} value={aValue} onChange={(event) => setAValue(Math.min(max, Math.max(0, Number(event.target.value))))} /></label><label>B<input type="number" min="0" max={max} value={bValue} onChange={(event) => setBValue(Math.min(max, Math.max(0, Number(event.target.value))))} /></label><BitToggle label="CIN" value={cin} onChange={setCin} /></div>
-    <div className="module-content-grid"><div className="module-data-column"><div className="module-section-label">FULL ADDER STAGES</div><TruthTable headers={["Aᵢ", "Bᵢ", "Cᵢ", "Sᵢ", "Cᵢ₊₁"]} rows={stageRows} /><div className="ripple-result"><span>SUM</span><strong>{bitString(result.sum)}₂ = {numberFromBits(result.sum)}₁₀</strong><Lamp label="COUT" value={result.carryOut} /></div><PlaybackControls stageCount={width} activeStage={activeStage} onStageChange={setActiveStage} /></div><CircuitFrame title="RIPPLE FULL-ADDER CHAIN" scale={scale} onScaleChange={setScale} width={canvasWidth} height={320}><text className="module-stage-label" x="120" y="24">LSB → MSB CARRY PROPAGATION</text>{Array.from({ length: width }, (_, index) => { const x = 120 + index * 160; const stage = result.stages[width - index - 1]; const active = activeStage >= width - index; return <g key={index}><rect className={`module-stage-box ${active ? "is-active" : ""}`} x={x} y="100" width="112" height="82" rx="10" /><text className="module-stage-box-title" x={x + 56} y="128" textAnchor="middle">FA{width - index}</text><text className="module-stage-box-value" x={x + 56} y="150" textAnchor="middle">Σ {bitValue(stage.sum)} · C {bitValue(stage.carry)}</text>{index < width - 1 && <Wire source="derived" value={stage.carry} d={`M${x + 112} 141 H${x + 160}`} />}</g>; })}<Wire source="a0" value={aBits[width - 1]} d={`M80 90 H120`} /><Wire source="b0" value={bBits[width - 1]} d={`M80 210 H120`} /><Terminal x={canvasWidth - 10} y={141} label="COUT" value={result.carryOut} kind="output" /></CircuitFrame></div>
+    <div className="module-content-grid"><div className="module-data-column"><div className="module-section-label">FULL ADDER STAGES</div><TruthTable headers={["Aᵢ", "Bᵢ", "Cᵢ", "Sᵢ", "Cᵢ₊₁"]} rows={stageRows} /><div className="ripple-result"><span>SUM</span><strong>{bitString(result.sum)}₂ = {numberFromBits(result.sum)}₁₀</strong><Lamp label="COUT" value={result.carryOut} /></div><PlaybackControls stageCount={width} activeStage={activeStage} onStageChange={setActiveStage} /></div><RippleChainDiagram title="RIPPLE FULL-ADDER CHAIN" aBits={aBits} bBits={bBits} result={result} activeStage={activeStage} scale={scale} onScaleChange={setScale} cin={cin} /></div>
     <PartialProductMatrix aBits={aBits} bBits={bBits} product={[result.carryOut, ...result.sum]} />
     <ModuleInfoBanner>Each full-adder stage receives the previous carry. The playback slider exposes the chain one depth at a time, while the matrix shows the weighted binary result.</ModuleInfoBanner>
   </article>;
@@ -417,7 +464,7 @@ function TwosComplementSubtractorCard() {
     <ModuleHeading eyebrow="08 / SUBTRACTOR" title="Two’s Complement Subtractor" description="Subtracts B from A with bitwise inversion, a hardwired carry-in of 1, and configurable raw-carry/no-borrow reporting." meta={`${width} BITS · CARRY FLAG`} />
     <FormulaStrip formulas={["A − B = A + ~B + 1", "No Borrow = COUT"]} />
     <div className="variable-module-controls"><label>Bit width<select value={width} onChange={(event) => { const next = Number(event.target.value); setWidth(next); setAValue((value) => Math.min(value, 2 ** next - 1)); setBValue((value) => Math.min(value, 2 ** next - 1)); setActiveStage(0); }}>{Array.from({ length: 7 }, (_, index) => <option key={index + 2} value={index + 2}>{index + 2}-bit</option>)}</select></label><label>A<input type="number" min="0" max={max} value={aValue} onChange={(event) => setAValue(Math.min(max, Math.max(0, Number(event.target.value))))} /></label><label>B<input type="number" min="0" max={max} value={bValue} onChange={(event) => setBValue(Math.min(max, Math.max(0, Number(event.target.value))))} /></label><div className="segmented-control"><button type="button" className={flagMode === "raw" ? "selected" : ""} onClick={() => setFlagMode("raw")}>Raw COUT</button><button type="button" className={flagMode === "noBorrow" ? "selected" : ""} onClick={() => setFlagMode("noBorrow")}>No Borrow</button></div></div>
-    <div className="module-content-grid"><div className="module-data-column"><div className="module-section-label">ADDER-BASED SUBTRACTION</div><TruthTable headers={["Aᵢ", "~Bᵢ", "Cᵢ", "Dᵢ", "Cᵢ₊₁"]} rows={stageRows} /><div className="ripple-result"><span>DIFFERENCE</span><strong>{bitString(result.difference)}₂ = {signedValue < 0 ? `${bitString(result.difference)}₂ (two's complement)` : `${signedValue}₁₀`}</strong><Lamp label={flagMode === "raw" ? "COUT" : "NO BORROW"} value={outputFlag} /></div><PlaybackControls stageCount={width} activeStage={activeStage} onStageChange={setActiveStage} /></div><CircuitFrame title="INVERT B + RIPPLE ADDER" scale={scale} onScaleChange={setScale} width={300 + width * 160} height={320}><text className="module-stage-label" x="120" y="24">A + ~B + 1</text>{Array.from({ length: width }, (_, index) => { const x = 120 + index * 160; const stage = result.stages[width - index - 1]; const active = activeStage >= width - index; return <g key={index}><rect className={`module-stage-box ${active ? "is-active" : ""}`} x={x} y="100" width="112" height="82" rx="10" /><text className="module-stage-box-title" x={x + 56} y="128" textAnchor="middle">FA{width - index}</text><text className="module-stage-box-value" x={x + 56} y="150" textAnchor="middle">D {bitValue(stage.sum)} · C {bitValue(stage.carry)}</text>{index < width - 1 && <Wire source="derived" value={stage.carry} d={`M${x + 112} 141 H${x + 160}`} />}</g>; })}<Terminal x={20} y={90} label="CIN = 1" value={1} source="c" /><Terminal x={300 + width * 160 - 10} y={141} label={flagMode === "raw" ? "COUT" : "NO BORROW"} value={outputFlag} kind="output" /></CircuitFrame></div>
+    <div className="module-content-grid"><div className="module-data-column"><div className="module-section-label">ADDER-BASED SUBTRACTION</div><TruthTable headers={["Aᵢ", "~Bᵢ", "Cᵢ", "Dᵢ", "Cᵢ₊₁"]} rows={stageRows} /><div className="ripple-result"><span>DIFFERENCE</span><strong>{bitString(result.difference)}₂ = {signedValue < 0 ? `${bitString(result.difference)}₂ (two's complement)` : `${signedValue}₁₀`}</strong><Lamp label={flagMode === "raw" ? "COUT" : "NO BORROW"} value={outputFlag} /></div><PlaybackControls stageCount={width} activeStage={activeStage} onStageChange={setActiveStage} /></div><RippleChainDiagram title="INVERT B + RIPPLE ADDER" aBits={aBits} bBits={result.complementedB} result={{ sum: result.difference, carryOut: result.carryOut, carries: result.carries, stages: result.stages }} activeStage={activeStage} scale={scale} onScaleChange={setScale} cin={1} subtract outputLabel={flagMode === "raw" ? "COUT" : "NO BORROW"} /></div>
     <ModuleInfoBanner>{aValue >= bValue ? `A ≥ B, so the final carry is 1 and the subtraction is non-negative (${signedValue}).` : `A < B, so the final carry is 0 and the difference is represented in ${width}-bit two's-complement form.`} The toggle lets you inspect the raw hardware carry or the semantic no-borrow flag.</ModuleInfoBanner>
   </article>;
 }

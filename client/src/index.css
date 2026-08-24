@@ -988,3 +988,56 @@ footer { font-size: 11px; }
 .dark .module-education-grid p { color: #a7bfba; }
 .dark .module-education-grid strong { color: #e4efec; }
 @media (max-width: 720px) { .module-education-grid { grid-template-columns: 1fr; } }
+
+/* Explicit variable definition and readable solver math. */
+.variable-definition-panel { display: grid; gap: 10px; margin-bottom: 16px; padding: 12px; border: 1px solid #c9ddd6; border-radius: 10px; background: linear-gradient(135deg, rgba(230,243,239,.72), rgba(255,255,255,.55)); }
+.variable-definition-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.variable-definition-heading > div:first-child { min-width: 0; flex: 1; }
+.variable-definition-heading .field-hint { margin: 4px 0 0; }
+.variable-definition-heading .stepper-control { flex: 0 0 auto; margin: 0; }
+.variable-definition-panel .variable-rename-controls { margin: 0; background: rgba(255,255,255,.5); }
+.variable-rename-controls input { width: 72px; min-width: 72px; padding: 7px 8px; font-size: 13px; letter-spacing: .04em; }
+.variable-rename-controls input:focus { border-color: #007c74; outline: 2px solid rgba(0,124,116,.16); outline-offset: 1px; }
+.transform-explainer { display: grid; gap: 10px; margin-bottom: 16px; padding: 16px 18px; border: 1px solid #c9ddd6; border-left: 3px solid #007c74; border-radius: 9px; background: #f3f8f5; }
+.transform-explainer h3 { margin: 5px 0 0; color: #193032; font-size: 18px; }
+.transform-explainer p { max-width: 860px; margin: 0; color: #61736f; font-size: 12px; line-height: 1.6; }
+.transform-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; color: #007c74; font: 700 10px "DM Mono", monospace; text-transform: uppercase; letter-spacing: .06em; }
+.transform-flow span { padding: 6px 8px; border: 1px solid #b8cec8; border-radius: 6px; background: rgba(255,255,255,.7); }
+.problem-solution-text { white-space: normal; overflow-wrap: anywhere; }
+.solution-math { display: inline-block; max-width: 100%; margin: 0 2px; color: #183234; vertical-align: middle; overflow-x: auto; }
+.solution-math-display { display: block; margin: 14px 0; padding: 4px 0; text-align: center; }
+.solution-math .katex { font-size: 1.08em; }
+.solution-math-display .katex { font-size: 1.2em; }
+.dark .variable-definition-panel { border-color: #38635f; background: linear-gradient(135deg, rgba(20,70,70,.4), rgba(16,38,48,.72)); }
+.dark .variable-definition-panel .variable-rename-controls { background: rgba(13,32,40,.45); }
+.dark .variable-rename-controls input:focus { border-color: #4be1bd; outline-color: rgba(75,225,189,.2); }
+.dark .transform-explainer { border-color: #38635f; background: #12343b; }
+.dark .transform-explainer h3 { color: #e4efec; }
+.dark .transform-explainer p { color: #a7bfba; }
+.dark .transform-flow span { border-color: #38635f; background: #15353b; }
+.dark .solution-math { color: #e7f4ef; }
+@media (max-width: 620px) {
+  .variable-definition-heading { flex-direction: column; }
+  .variable-definition-heading .stepper-control { align-self: stretch; justify-content: space-between; }
+  .transform-flow { align-items: stretch; flex-direction: column; }
+  .transform-flow svg { display: none; }
+}
+
+/* Pin-connected arithmetic stage blocks. */
+.module-adder-block rect { fill: #f4faf7; stroke: #6ca99b; stroke-width: 2; }
+.module-adder-block.is-active rect { fill: #d9f5e8; stroke: #0ca678; }
+.module-adder-block-title { fill: #007c74; font: 800 13px "DM Mono", monospace; letter-spacing: .06em; }
+.module-adder-block-value { fill: #61736f; font: 700 11px "DM Mono", monospace; }
+.module-adder-port-label { fill: #007c74; font: 800 9px "DM Mono", monospace; }
+.module-adder-input-pin { fill: #06b6d4; stroke: #f4faf7; stroke-width: 1.5; }
+.module-adder-output-pin { fill: #14b8a6; stroke: #f4faf7; stroke-width: 1.5; }
+.module-input-label, .module-output-label { font-size: 9px; letter-spacing: .02em; }
+.dark .module-adder-block rect { fill: #15353b; stroke: #4c8e85; }
+.dark .module-adder-block.is-active rect { fill: #174d45; stroke: #4be1bd; }
+.dark .module-adder-block-title, .dark .module-adder-port-label { fill: #4be1bd; }
+.dark .module-adder-block-value { fill: #a7bfba; }
+.dark .module-adder-input-pin { fill: #7de7f7; stroke: #15353b; }
+.dark .module-adder-output-pin { fill: #4be1bd; stroke: #15353b; }
+
+.module-adder-block.is-highlighted rect { stroke: #2563eb; stroke-width: 2.5; filter: drop-shadow(0 0 5px rgba(37,99,235,.2)); }
+.dark .module-adder-block.is-highlighted rect { stroke: #79a7ff; filter: drop-shadow(0 0 5px rgba(121,167,255,.3)); }

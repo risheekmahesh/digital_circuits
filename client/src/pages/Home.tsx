@@ -284,7 +284,7 @@ function VariableStepper({ value, onChange }: { value: number; onChange: (value:
 function VariableRenameControls({ names, onChange }: { names: string[]; onChange: (index: number, value: string) => void }) {
   return <div className="variable-rename-controls" aria-label="Rename Boolean variables">
     <span className="field-label">Variable labels</span>
-    <div>{names.map((name, index) => <label key={`${name}-${index}`}><span>{index + 1}</span><input value={name} maxLength={3} aria-label={`Rename variable ${index + 1}`} onChange={(event) => onChange(index, event.target.value)} /></label>)}</div>
+    <div>{names.map((name, index) => <label key={`${name}-${index}`}><span>{index + 1}</span><input value={name} maxLength={3} aria-label={`Rename variable ${index + 1}`} onFocus={(event) => event.currentTarget.select()} onChange={(event) => onChange(index, event.target.value)} /></label>)}</div>
     <small>Use up to 3 letters or numbers; labels propagate through the table and generated expressions.</small>
   </div>;
 }
@@ -378,7 +378,7 @@ export default function Home({ embedded = false, visibleSection = "all" }: { emb
 
   const renameVariable = (index: number, value: string) => {
     const clean = value.toUpperCase().replace(/[^A-Z0-9_]/g, "").slice(0, 3);
-    setVariableNames((existing) => existing.map((name, nameIndex) => nameIndex === index ? clean || name : name));
+    setVariableNames((existing) => existing.map((name, nameIndex) => nameIndex === index ? clean : name));
   };
 
   const handleAnalyze = () => {
@@ -571,7 +571,9 @@ export default function Home({ embedded = false, visibleSection = "all" }: { emb
               </div>
             </div>
 
-            {showSection("transform") && <div className="summary-grid" id="transform">
+            {showSection("transform") && <section className="transform-explainer" id="transform" aria-labelledby="transform-title"><div><div className="eyebrow">FUNCTION TRANSFORMATION</div><h3 id="transform-title">What this tab shows</h3></div><p>The Transform view compares the same function in source notation, minimized SOP, and minimized POS. SOP groups the HIGH minterms for an AND–OR realization, while POS groups the LOW maxterms for an OR–AND realization and the NOR-only circuit.</p><div className="transform-flow"><span>Source function</span><ArrowRight size={15} /><span>Minimized SOP</span><ArrowRight size={15} /><span>Minimized POS</span><ArrowRight size={15} /><span>Equivalent gates</span></div></section>}
+
+            {showSection("transform") && <div className="summary-grid">
               <article className="summary-card source-card"><div className="summary-label"><span>Source function</span><FileSpreadsheet size={15} /></div><code>{analysis.originalExpression}</code><p>{analysis.variables.length} inputs · {analysis.minterms.length} high states{analysis.dontCares.length ? ` · ${analysis.dontCares.length} don't-care states` : ""}</p></article>
               <article className="summary-card optimized-card"><div className="summary-label"><span>Minimized SOP</span><button type="button" aria-label="Copy simplified expression" onClick={copySimplified}>{copied ? <Check size={15} /> : <Copy size={15} />}</button></div><code>{analysis.simplifiedExpression}</code><p>Optimized with prime implicant coverage</p></article>
               <article className="summary-card pos-card"><div className="summary-label"><span>Minimized POS</span><Layers3 size={15} /></div><code>{analysis.posExpression}</code><p>Basis for the NOR-only realization</p></article>

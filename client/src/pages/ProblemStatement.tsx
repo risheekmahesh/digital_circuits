@@ -1,4 +1,6 @@
 import { useRef, useState } from "react";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import { AlertCircle, CheckCircle2, FileText, Loader2, Sparkles, UploadCloud, X } from "lucide-react";
 
 type UploadState = "idle" | "reading" | "ready" | "error";
@@ -21,6 +23,36 @@ function readAsDataUrl(file: File) {
     reader.onerror = () => reject(new Error("The selected file could not be read."));
     reader.readAsDataURL(file);
   });
+}
+
+function latexSource(value: string) {
+  let source = value.trim();
+  let displayMode = false;
+  if ((source.startsWith("$$") && source.endsWith("$$")) || (source.startsWith("\\[") && source.endsWith("\\]"))) {
+    displayMode = true;
+    source = source.startsWith("$$") ? source.slice(2, -2) : source.slice(2, -2);
+  } else if (source.startsWith("$") && source.endsWith("$")) {
+    source = source.slice(1, -1);
+  } else if (source.startsWith("\\(") && source.endsWith("\\)")) {
+    source = source.slice(2, -2);
+  }
+  return { source, displayMode };
+}
+
+function SolutionMath({ value }: { value: string }) {
+  const { source, displayMode } = latexSource(value);
+  return <span className={displayMode ? "solution-math solution-math-display" : "solution-math"} dangerouslySetInnerHTML={{ __html: katex.renderToString(source, { displayMode, throwOnError: false, trust: false }) }} />;
+}
+
+function SolutionText({ value }: { value: string }) {
+  const tokenPattern = /(\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g;
+  const parts = value.split(tokenPattern);
+  return <div className="problem-solution-text">{parts.map((part, index) => {
+    if (!part) return null;
+    const isMath = part.startsWith("$") || part.startsWith("\\(") || part.startsWith("\\[");
+    if (isMath) return <SolutionMath key={index} value={part} />;
+    return <span key={index}>{part.split("\\n").map((line, lineIndex, lines) => <span key={lineIndex}>{line}{lineIndex < lines.length - 1 && <br />}</span>)}</span>;
+  })}</div>;
 }
 
 export default function ProblemStatement() {
@@ -114,18 +146,18 @@ export default function ProblemStatement() {
   };
 
   return <div className="problem-page">
-    <header className="dashboard-page-heading problem-page-heading"><div><div className="eyebrow"><span className="eyebrow-line" /> PROBLEM STATEMENT WORKSPACE</div><h1>Turn a circuit prompt into <i>clear reasoning.</i></h1><p>Write a digital-circuit problem or upload a reference file. Review the extracted statement, then send it to the secure Gemini solver.</p></div><div className="problem-page-badge"><Sparkles size={15} /> GEMINI SOLVER</div></header>
+    <header className="dashboard-page-heading problem-page-heading"><div><div className="eyebrow"><span className="eyebrow-line" /> PROBLEM STATEMENT WORKSPACE</div><h1>Turn a circuit prompt into <i>clear reasoning.</i></h1><p>Write a digital-circuit problem or upload a reference file. Review the extracted statement, then generate a structured digital-logic solution.</p></div><div className="problem-page-badge"><Sparkles size={15} /> LOGIC SOLVER</div></header>
 
     <section className="problem-workspace-card" aria-labelledby="problem-workspace-title">
-      <div className="problem-card-heading"><div><div className="eyebrow">01 / INPUT</div><h2 id="problem-workspace-title">Describe the problem</h2><p>Use either method below. Uploaded text is always placed in the editor for review before the AI sees it.</p></div><FileText size={25} /></div>
+      <div className="problem-card-heading"><div><div className="eyebrow">01 / INPUT</div><h2 id="problem-workspace-title">Describe the problem</h2><p>Use either method below. Uploaded text is always placed in the editor for review before the solver sees it.</p></div><FileText size={25} /></div>
       <div className="problem-input-grid">
-        <div className="problem-write-panel"><div className="problem-panel-kicker">WRITE PROBLEM</div><label htmlFor="problem-statement">Problem statement</label><textarea id="problem-statement" value={problem} onChange={(event) => { setProblem(event.target.value); setSolution(""); setSolveError(""); }} placeholder="Enter your digital circuit problem here..." spellCheck={false} /><div className="problem-editor-footer"><span>{problem.length} characters</span><span>Multiline input supported</span></div></div>
-        <div className="problem-upload-panel"><div className="problem-panel-kicker">UPLOAD PROBLEM</div><input ref={inputRef} className="problem-file-input" type="file" accept={ACCEPTED_TYPES} onChange={(event) => { const selected = event.target.files?.[0]; if (selected) void processFile(selected); }} /><button type="button" className={`problem-dropzone ${dragActive ? "is-dragging" : ""}`} onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragActive(true); }} onDragLeave={() => setDragActive(false)} onDrop={(event) => { event.preventDefault(); setDragActive(false); const selected = event.dataTransfer.files?.[0]; if (selected) void processFile(selected); }}><span className="problem-upload-icon"><UploadCloud size={25} /></span><strong>Drop a problem file here</strong><small>or click to browse PDF, PNG, JPG, JPEG, TXT</small></button>{file && <div className={`problem-file-status ${uploadState === "error" ? "has-error" : ""}`}><FileText size={16} /><span><strong>{file.name}</strong><small>{uploadState === "reading" ? "Reading with Gemini…" : uploadMessage || "Selected upload"}</small></span><button type="button" aria-label="Remove uploaded file" onClick={clearUpload}><X size={15} /></button></div>}{uploadState === "reading" && <div className="problem-progress"><Loader2 size={14} className="is-spinning" /> Extracting problem text for review…</div>}{uploadState === "ready" && <div className="problem-success"><CheckCircle2 size={14} /> Extracted text is ready to review.</div>}{uploadState === "error" && <div className="problem-error"><AlertCircle size={14} /> {uploadMessage}</div>}</div>
+        <div className="problem-write-panel"><div className="problem-panel-kicker">WRITE PROBLEM</div><label htmlFor="problem-statement">Problem statement</label><textarea id="problem-statement" value={problem} onChange={(event) => { setProblem(event.target.value); setSolution(""); setSolveError(""); }} placeholder="Enter your digital circuit problem here..." spellCheck={false} /><div className="problem-editor-footer"><span>No word limit</span><span>Multiline input supported</span></div></div>
+        <div className="problem-upload-panel"><div className="problem-panel-kicker">UPLOAD PROBLEM</div><input ref={inputRef} className="problem-file-input" type="file" accept={ACCEPTED_TYPES} onChange={(event) => { const selected = event.target.files?.[0]; if (selected) void processFile(selected); }} /><button type="button" className={`problem-dropzone ${dragActive ? "is-dragging" : ""}`} onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragActive(true); }} onDragLeave={() => setDragActive(false)} onDrop={(event) => { event.preventDefault(); setDragActive(false); const selected = event.dataTransfer.files?.[0]; if (selected) void processFile(selected); }}><span className="problem-upload-icon"><UploadCloud size={25} /></span><strong>Drop a problem file here</strong><small>or click to browse PDF, PNG, JPG, JPEG, TXT</small></button>{file && <div className={`problem-file-status ${uploadState === "error" ? "has-error" : ""}`}><FileText size={16} /><span><strong>{file.name}</strong><small>{uploadState === "reading" ? "Reading uploaded file…" : uploadMessage || "Selected upload"}</small></span><button type="button" aria-label="Remove uploaded file" onClick={clearUpload}><X size={15} /></button></div>}{uploadState === "reading" && <div className="problem-progress"><Loader2 size={14} className="is-spinning" /> Extracting problem text for review…</div>}{uploadState === "ready" && <div className="problem-success"><CheckCircle2 size={14} /> Extracted text is ready to review.</div>}{uploadState === "error" && <div className="problem-error"><AlertCircle size={14} /> {uploadMessage}</div>}</div>
       </div>
-      <div className="problem-solve-row"><div><div className="problem-panel-kicker">02 / SOLVE</div><p>Check the reviewed statement above, then ask Gemini for a structured digital-logic solution.</p></div><button type="button" className="problem-solve-button" onClick={() => void solveProblem()} disabled={solving || !problem.trim()}>{solving ? <><Loader2 size={17} className="is-spinning" /> Solving…</> : <><Sparkles size={17} /> Solve Problem</>}</button></div>
+      <div className="problem-solve-row"><div><div className="problem-panel-kicker">02 / SOLVE</div><p>Check the reviewed statement above, then generate a structured digital-logic solution.</p></div><button type="button" className="problem-solve-button" onClick={() => void solveProblem()} disabled={solving || !problem.trim()}>{solving ? <><Loader2 size={17} className="is-spinning" /> Solving…</> : <><Sparkles size={17} /> Solve Problem</>}</button></div>
       {solveError && <div className="problem-error problem-solve-error"><AlertCircle size={15} /> {solveError}</div>}
     </section>
 
-    {(solution || solving) && <section className="problem-solution-card" aria-live="polite"><div className="problem-card-heading"><div><div className="eyebrow">03 / RESULT</div><h2>AI solution</h2><p>Gemini’s answer is shown here so you can compare it with your circuit work.</p></div><Sparkles size={25} /></div>{solving ? <div className="problem-solution-loading"><Loader2 size={18} className="is-spinning" /> Gemini is reasoning through the circuit…</div> : <div className="problem-solution-text">{solution}</div>}</section>}
+    {(solution || solving) && <section className="problem-solution-card" aria-live="polite"><div className="problem-card-heading"><div><div className="eyebrow">03 / RESULT</div><h2>Solution</h2><p>The generated answer is shown here so you can compare it with your circuit work.</p></div><Sparkles size={25} /></div>{solving ? <div className="problem-solution-loading"><Loader2 size={18} className="is-spinning" /> Working through the circuit…</div> : <SolutionText value={solution} />}</section>}
   </div>;
 }
