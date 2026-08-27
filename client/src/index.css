@@ -1059,3 +1059,21 @@ footer { font-size: 11px; }
 .dark .dashboard-search-results small, .dark .dashboard-search-empty { color: #a7bfba; }
 @media (max-width: 1023px) { .dashboard-search-wrap { width: min(360px, 42vw); } }
 @media (max-width: 700px) { .dashboard-search-wrap { display: none; } }
+
+/* The Boolean Lab input column is intentionally dark; keep the nested variable editor readable in light mode. */
+.input-panel .variable-definition-panel { color: #193032; background: #eaf4f0; }
+.input-panel .variable-definition-panel .field-label { color: #35605b; }
+.input-panel .variable-definition-panel .field-hint { color: #55716c; }
+.input-panel .variable-definition-panel .stepper-control { color: #55716c; }
+.input-panel .variable-definition-panel .stepper-control strong { color: #193032; }
+.input-panel .variable-definition-panel .stepper-control button { color: #007c74; background: #f8fcfa; border-color: #9bc8bd; }
+.input-panel .variable-definition-panel .variable-rename-controls { background: #f8fcfa; }
+.input-panel .variable-definition-panel .variable-rename-controls small { color: #55716c; }
+.dark .input-panel .variable-definition-panel { color: #e4efec; background: linear-gradient(135deg, rgba(20,70,70,.4), rgba(16,38,48,.72)); }
+.dark .input-panel .variable-definition-panel .field-label { color: #d6e5e1; }
+.dark .input-panel .variable-definition-panel .field-hint { color: #a9c5c0; }
+.dark .input-panel .variable-definition-panel .stepper-control { color: #c1dbd6; }
+.dark .input-panel .variable-definition-panel .stepper-control strong { color: #f5f5ef; }
+.dark .input-panel .variable-definition-panel .stepper-control button { color: #e4f2f0; background: transparent; border-color: rgba(222,239,235,.3); }
+.dark .input-panel .variable-definition-panel .variable-rename-controls { background: rgba(13,32,40,.45); }
+.dark .input-panel .variable-definition-panel .variable-rename-controls small { color: #a7bfba; }
