@@ -1041,3 +1041,21 @@ footer { font-size: 11px; }
 
 .module-adder-block.is-highlighted rect { stroke: #2563eb; stroke-width: 2.5; filter: drop-shadow(0 0 5px rgba(37,99,235,.2)); }
 .dark .module-adder-block.is-highlighted rect { stroke: #79a7ff; filter: drop-shadow(0 0 5px rgba(121,167,255,.3)); }
+
+/* Functional dashboard search results. */
+.dashboard-search-wrap { position: relative; display: flex; width: min(430px, 40vw); }
+.dashboard-search-wrap .dashboard-search { width: 100%; }
+.dashboard-search-results { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 70; display: grid; gap: 3px; padding: 6px; background: #fbfaf6; border: 1px solid #cbd8d1; border-radius: 10px; box-shadow: 0 16px 30px rgba(24,50,52,.16); }
+.dashboard-search-results button { display: flex; align-items: flex-start; gap: 9px; width: 100%; padding: 9px 10px; color: #4d6863; background: transparent; border: 0; border-radius: 7px; text-align: left; cursor: pointer; }
+.dashboard-search-results button:hover, .dashboard-search-results button.is-active { color: #075f59; background: #e7f3f0; }
+.dashboard-search-results button > svg { flex: 0 0 auto; margin-top: 2px; color: #007c74; }
+.dashboard-search-results button span { display: grid; gap: 3px; min-width: 0; }
+.dashboard-search-results strong { color: #183234; font: 700 12px/1.2 "DM Mono", monospace; }
+.dashboard-search-results small { color: #71827f; font: 500 10px/1.35 "DM Mono", monospace; }
+.dashboard-search-empty { padding: 11px 10px; color: #71827f; font: 500 11px/1.4 "DM Mono", monospace; }
+.dark .dashboard-search-results { background: #102630; border-color: #38555c; box-shadow: 0 16px 30px rgba(0,0,0,.35); }
+.dark .dashboard-search-results button:hover, .dark .dashboard-search-results button.is-active { color: #c9fff1; background: #183f43; }
+.dark .dashboard-search-results strong { color: #e7f4ef; }
+.dark .dashboard-search-results small, .dark .dashboard-search-empty { color: #a7bfba; }
+@media (max-width: 1023px) { .dashboard-search-wrap { width: min(360px, 42vw); } }
+@media (max-width: 700px) { .dashboard-search-wrap { display: none; } }

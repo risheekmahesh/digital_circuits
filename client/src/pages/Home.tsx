@@ -41,19 +41,10 @@ import ThemeToggle from "@/components/ThemeToggle";
 type InputMode = "expression" | "terms" | "truth";
 type TermKind = "minterms" | "maxterms";
 type TruthCell = "0" | "1" | "X";
-type Preset = { label: string; helper: string; expression: string };
-
 const HERO_ASSET = "/manus-storage/circuit-atlas-hero_7678a108.jpg";
 const DETAIL_ASSET = "/manus-storage/circuit-atlas-diagram-detail_647595c6.jpg";
 const DEFAULT_EXPRESSION = "A'B + AB' + AC";
 const DEFAULT_TRUTH: TruthCell[] = ["0", "1", "1", "0", "1", "1", "1", "1"];
-const PRESETS: Preset[] = [
-  { label: "Majority voter", helper: "3-variable", expression: "AB + AC + BC" },
-  { label: "Prime detector", helper: "4-variable", expression: "A'B'CD + A'BC'D + AB'CD' + ABC'D' + ABCD" },
-  { label: "3-input parity", helper: "XOR", expression: "A XOR B XOR C" },
-  { label: "Security alarm", helper: "word logic", expression: "DOOR AND IGNITION OR MOTION AND NIGHT" },
-];
-
 function makeInitialAnalysis() {
   const parsed = parseBooleanExpression(DEFAULT_EXPRESSION);
   return analyzeFromValues(parsed.variables, parsed.values, DEFAULT_EXPRESSION);
@@ -513,7 +504,6 @@ export default function Home({ embedded = false, visibleSection = "all" }: { emb
               <InputModeTab active={mode === "terms"} label="Terms" helper="Σm / ΠM" icon={<Sigma size={18} />} onClick={() => setMode("terms")} />
               <InputModeTab active={mode === "truth"} label="Truth table" helper="0 → 1 → X" icon={<TableProperties size={17} />} onClick={() => setMode("truth")} />
             </div>
-              <div className="preset-strip"><span className="field-label">Quick starts</span><div>{PRESETS.map((preset) => <button type="button" key={preset.label} onClick={() => { const presetVariables = Array.from(new Set((preset.expression.match(/[A-Za-z][A-Za-z0-9_]*/g) ?? []).map((name) => name.toUpperCase()))).filter((name) => !["AND", "OR", "NOT", "XOR", "XNOR"].includes(name)); const nextCount = Math.min(6, Math.max(2, presetVariables.length)); setMode("expression"); setExpression(preset.expression); setVariableCount(nextCount); setVariableNames((current) => Array.from({ length: nextCount }, (_, index) => presetVariables[index] || current[index] || createVariables(nextCount)[index])); setError(""); }}>{preset.label}<small>{preset.helper}</small></button>)}</div></div>
 
             <div className="input-stage">
               {mode === "expression" && <>
