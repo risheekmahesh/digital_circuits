@@ -1077,3 +1077,13 @@ footer { font-size: 11px; }
 .dark .input-panel .variable-definition-panel .stepper-control button { color: #e4f2f0; background: transparent; border-color: rgba(222,239,235,.3); }
 .dark .input-panel .variable-definition-panel .variable-rename-controls { background: rgba(13,32,40,.45); }
 .dark .input-panel .variable-definition-panel .variable-rename-controls small { color: #a7bfba; }
+
+/* Terms and Truth Table modes render the variable editor directly in the dark input column. */
+.input-panel .variable-rename-controls { border-color: #c9ddd6; background: #eaf4f0; }
+.input-panel .variable-rename-controls > .field-label { color: #35605b; }
+.input-panel .variable-rename-controls label { color: #35605b; }
+.input-panel .variable-rename-controls small { color: #55716c; }
+.dark .input-panel .variable-rename-controls { border-color: #38635f; background: rgba(20,70,70,.24); }
+.dark .input-panel .variable-rename-controls > .field-label { color: #d6e5e1; }
+.dark .input-panel .variable-rename-controls label { color: #6f817c; }
+.dark .input-panel .variable-rename-controls small { color: #a7bfba; }
